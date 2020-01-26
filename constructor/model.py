@@ -58,6 +58,7 @@ class Model(object):
             raise ValueError('Model does not exist')
         self._model.save(path + '/' + name + '.h5')
         self._model = None
+        self.layers = None
 
         with open(path + '/' + name + '.pkl', 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
@@ -69,6 +70,7 @@ class Model(object):
         """
 
         self._model = load_model(path + '/' + self.name + '.h5')
+        self.layers = self._model.layers
 
     def build(self):
         """Builds model"""

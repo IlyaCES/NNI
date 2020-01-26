@@ -57,6 +57,7 @@ class NNConstructorAPI:
         :param rho: rho for RMSProp or Adadelta
         :raises ValueError: If wrong algorithm name is passed
         """
+        print(params)
 
         if params['algorithm'] == 'Adam':
             self.model.optimizer = optimizers.Adam(learning_rate=params['learning_rate'],
