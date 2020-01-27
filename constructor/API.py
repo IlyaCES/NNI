@@ -205,11 +205,9 @@ class NNConstructorAPI:
 
         if type(self.model.layers[0]) is Conv2D:
             if self.dataset.grayscale:
-                self.model.add_layer(Input(shape=(28, 28, 1)), 0)  # ебаный костыль
-                print('kostyl 1')
+                self.model.add_layer(Input(shape=(28, 28, 1)), 0)
             else:
                 self.model.add_layer(Input(shape=(28, 28, 3)), 0)
-                print('kostyl 2')
         elif type(self.model.layers[0]) is Dense:
             self.model.add_layer(Flatten(), 0)
         self.model.add_layer(Dense(len(self.dataset.labels), activation='softmax'))

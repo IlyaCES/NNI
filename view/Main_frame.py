@@ -258,7 +258,7 @@ class NNI(tk.Tk):
             epochs = int(self.epochs.get())
             if epochs <= 0 or epochs > 1000:
                 raise ValueError()
-        except:
+        except ValueError:
             msg.showwarning('Error', 'Number of epochs should be an integer between 1 and 10000')
             return
 
@@ -290,18 +290,18 @@ class NNI(tk.Tk):
         for i in range(0, len(self.layerBuffer)-1):
             temp = self.layerBuffer[i]
             if temp.name == "Convolutional layer":
-                print('Convolutional (filters: ' + temp.filters + "; kernelSize (" + temp.kernelSize_1 + ':' + temp.kernelSize_2 + '))')
+                #print('Convolutional (filters: ' + temp.filters + "; kernelSize (" + temp.kernelSize_1 + ':' + temp.kernelSize_2 + '))')
                 self.constructorAPI.add_conv(filters=temp.filters,
                                              kernel_size=(temp.kernelSize_1, temp.kernelSize_2),
                                              activation=temp.activations)
             elif temp.name == "Max pooling layer":
-                print("Max pooling layer // poolSize= (" + temp.poolSize_1 + ":" + temp.poolSize_2 + ")")
+                #print("Max pooling layer // poolSize= (" + temp.poolSize_1 + ":" + temp.poolSize_2 + ")")
                 self.constructorAPI.add_max_pooling(pool_size=(temp.poolSize_1, temp.poolSize_2))
             elif temp.name == "Dense layer":
-                print("Dense layer // neurons:" + temp.neurons)
+                #print("Dense layer // neurons:" + temp.neurons)
                 self.constructorAPI.add_dense(temp.neurons)
             elif temp.name == "Flatten layer":
-                print("Flatten layer")
+                #print("Flatten layer")
                 self.constructorAPI.add_flatten()
             elif temp.name == "Dropout layer":
                 #print("Dropout layer (dropout = " + (float(temp.dropNeurons)) + ")")
@@ -323,21 +323,21 @@ class NNI(tk.Tk):
         self.ThreadedTask(self.queue, self.constructorAPI,
                           batch_size,
                           epochs,
-                          self.PlotsUpdate(self.queue)).start()
+                          [self.PlotsUpdate(self.queue), self.EndOfTraining()]).start()
 
         self.notebook.tab(1, state="normal")
 
     class ThreadedTask(Thread):
-        def __init__(self, queue, api, batch_size, epochs, callback):
+        def __init__(self, queue, api, batch_size, epochs, callbacks):
             Thread.__init__(self, daemon=True)
             self.queue = queue
             self.api = api
             self.batch_size = batch_size
             self.epochs = epochs
-            self.callback = callback
+            self.callbacks = callbacks
 
         def run(self):
-            self.api.fit(int(self.batch_size), int(self.epochs), callbacks=[self.callback])
+            self.api.fit(int(self.batch_size), int(self.epochs), callbacks=self.callbacks)
 
 
     def stop(self, event):
@@ -562,7 +562,7 @@ class NNI(tk.Tk):
             filters = int(layer.filters.get())
             if filters <= 0:
                 raise ValueError()
-        except:
+        except ValueError:
             msg.showwarning('Error', 'Number of filters should be a positive integer')
             return
 
@@ -664,6 +664,7 @@ class NNI(tk.Tk):
         except ValueError:
             msg.showwarning('Error', 'Drop rate should be a float number between 0 and 1')
             return
+
         newClass = self.layerDropout()
         selection = (self.listbox_builder.curselection())
         if self.listbox_builder.get(tk.ANCHOR) == 'Default Exit layer':
@@ -818,11 +819,28 @@ class NNI(tk.Tk):
             layer.add_button.place(x=100, y=225)
 
     def change_Convolutional(self, layer):
+        try:
+            kernel_size_1 = int(layer.kernelSize_1.get())
+            kernel_size_2 = int(layer.kernelSize_2.get())
+            if kernel_size_1 <= 0 or kernel_size_2 <= 0:
+                raise ValueError()
+        except ValueError:
+            msg.showwarning('Error', 'Kernel size should be a pair of ints > 0')
+            return
+
+        try:
+            filters = int(layer.filters.get())
+            if filters <= 0:
+                raise ValueError()
+        except ValueError:
+            msg.showwarning('Error', 'Number of filters should be a positive integer')
+            return
+
         selection = (self.listbox_builder.curselection())
         value = self.layerBuffer[selection[0]-1]
-        value.filters = layer.filters.get()
-        value.kernelSize_1 = layer.kernelSize_1.get()
-        value.kernelSize_2 = layer.kernelSize_2.get()
+        value.filters = filters
+        value.kernelSize_1 = kernel_size_1
+        value.kernelSize_2 = kernel_size_2
         value.activations = (layer.listbox_conv_layer.get(layer.listbox_conv_layer.curselection()))
         print("filters=", value.filters)
         print("kernelSize (", value.kernelSize_1, ':', value.kernelSize_2, ')')
@@ -830,17 +848,34 @@ class NNI(tk.Tk):
         layer.destroy()
 
     def change_MaxPooling(self, layer):
+        try:
+            pool_size_1 = int(layer.poolSize_1.get())
+            pool_size_2 = int(layer.poolSize_2.get())
+            if pool_size_1 <= 0 or pool_size_2 <= 0:
+                raise ValueError()
+        except ValueError:
+            msg.showwarning('Error', 'Pool size should be a pair of ints > 0')
+            return
+
         selection = (self.listbox_builder.curselection())
         value = self.layerBuffer[selection[0]-1]
-        value.poolSize_1 = layer.poolSize_1.get()
-        value.poolSize_2 = layer.poolSize_2.get()
+        value.poolSize_1 = pool_size_1
+        value.poolSize_2 = pool_size_2
         print("poolSize (", value.poolSize_1 , ':', value.poolSize_2, ')')
         layer.destroy()
 
     def change_Dense(self, layer):
+        try:
+            neurons = int(layer.neurons.get())
+            if neurons <= 0:
+                raise ValueError()
+        except ValueError:
+            msg.showwarning('Error', 'Number of neurons should be a positive integer')
+            return
+
         selection = (self.listbox_builder.curselection())
         value = self.layerBuffer[selection[0]-1]
-        value.neurons = layer.neurons.get()
+        value.neurons = neurons
         print("neurons=", value.neurons)
         layer.destroy()
 
@@ -848,9 +883,17 @@ class NNI(tk.Tk):
         msg.showwarning('Warning', 'Flatten impossible to change')
 
     def change_Dropout(self, layer):
+        try:
+            drop_rate = float(layer.dropNeurons.get())
+            if not 0 <= drop_rate < 1:
+                raise ValueError()
+        except ValueError:
+            msg.showwarning('Error', 'Drop rate should be a float number between 0 and 1')
+            return
+
         selection = (self.listbox_builder.curselection())
         value = self.layerBuffer[selection[0]-1]
-        value.dropNeurons = layer.dropNeurons.get()
+        value.dropNeurons = drop_rate
         print("dropNeurons", value.dropNeurons)
         layer.destroy()
 
@@ -920,6 +963,13 @@ class NNI(tk.Tk):
 
         def on_epoch_end(self, epoch, logs=None):
             self.queue.put(logs)
+
+    class EndOfTraining(Callback):
+        def __init__(self):
+            super(Callback, self).__init__()
+
+        def on_train_end(self, logs=None):
+            pass
 
 
     def set_plot(self):
