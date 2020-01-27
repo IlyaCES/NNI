@@ -31,8 +31,10 @@ class NNI(tk.Tk):
         self.notebook = Notebook(self)
         builder_tab = tk.Frame(self.notebook)
         self.result_tab = tk.Frame(self.notebook)
+        self.storage_tab = tk.Frame(self.notebook)
         self.notebook.add(builder_tab, text="Building architecture")
-        self.notebook.add(self.result_tab, text="Result")
+        self.notebook.add(self.result_tab, text="Result", state="disabled")
+        self.notebook.add(self.storage_tab, text="Storage")
 
     #Create canvas for dinamic blocs
         self.tasks_canvas = tk.Canvas(builder_tab, width=600, bd=0)
@@ -83,8 +85,8 @@ class NNI(tk.Tk):
         self.stop_button.bind('<Button-1>', self.stop)
         self.stop_button.place(x=1080, y=350)
         self.save_button = tk.Button(self.result_tab, text='Save', font='Arial 10', width=10)
-        self.save_button.bind('<Button-1>', self.stop)
-        self.save_button.place(x=1080, y=10)
+        self.save_button.bind('<Button-1>', self.save)
+        self.save_button.place_forget()
 
         #self.enretLayer_button = tk.Button(self.tasks_canvas, width=20, height=2, text='Default Enter layer', font='Arial 10')
         #self.enretLayer_button.bind('<Button-1>', self.openMenuEnter)
@@ -148,8 +150,12 @@ class NNI(tk.Tk):
         self.listbox_options.place(x=720, y=45)
 
         self.grayscale_val = tk.BooleanVar()
-        self.grayscale_che = tk.Checkbutton(builder_tab, text='Grayscale', variable=self.grayscale_val)
-        self.grayscale_che.place(x=889, y=298)
+        self.grayscale_val.set(0)
+        self.r1 = tk.Radiobutton(builder_tab, text='Grayscale', variable=self.grayscale_val, value = 1)
+        self.r2 = tk.Radiobutton(builder_tab, text='RGB', variable=self.grayscale_val, value = 0)
+        self.r1.place(x=960, y=298)
+        self.r2.place(x=890, y=298)
+
 
         for item in listbox_option_items:
             self.listbox_options.insert(tk.END, item)
@@ -173,6 +179,16 @@ class NNI(tk.Tk):
         #     self.listbox_metrik.insert(tk.END, item_metrik)
 
         self.notebook.pack(fill=tk.BOTH, expand=1)
+
+    def save(self, event):
+
+        if len(self.name.get()) == 0:
+            msg.showwarning('Error', 'Missing model name')
+            return
+
+        self.constructorAPI.save_model(name=self.name.get())
+
+
 
     def browse(self, event):
         self.path.config(state='normal')
@@ -273,6 +289,7 @@ class NNI(tk.Tk):
             return
         constructorAPI.fit(int(self.batch_size.get()), int(self.epochs.get()))
 
+        self.notebook.tab(1, state="normal")
         self.get_grafic(constructorAPI)
 
     def stop(self, event):
@@ -821,6 +838,8 @@ class NNI(tk.Tk):
 
         canvas = FigureCanvasTkAgg(figure, self.result_tab)
         canvas.get_tk_widget().grid(row=0, column=0)
+        self.save_button.place(x=1080, y=10)
+        self.constructorAPI = constructor
 
 if __name__ == "__main__":
     nni = NNI()
