@@ -84,7 +84,7 @@ class NNI(tk.Tk):
         self.stop_button.place(x=1080, y=350)
         self.save_button = tk.Button(self.result_tab, text='Save', font='Arial 10', width=10)
         self.save_button.bind('<Button-1>', self.stop)
-        self.save_button.place(x=1080, y=350)
+        self.save_button.place(x=1080, y=10)
 
         #self.enretLayer_button = tk.Button(self.tasks_canvas, width=20, height=2, text='Default Enter layer', font='Arial 10')
         #self.enretLayer_button.bind('<Button-1>', self.openMenuEnter)
@@ -101,6 +101,10 @@ class NNI(tk.Tk):
         self.minus = self.tasks_canvas.create_text(525, 105, text="⚙",
                                                    justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
         self.tasks_canvas.tag_bind(self.minus, '<Button-1>', self.change_layer)
+
+    #Text area
+        self.log = tk.Text(self.result_tab, width=100, height=100)
+        self.log.place(x=710, y=50)
 
     #Create Entrys
         # visiable Entrys
