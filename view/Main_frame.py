@@ -340,12 +340,26 @@ class NNI(tk.Tk):
             msg.showwarning('Error', str(e))
             return
 
-        self.constructorAPI.set_optimizer(algorithm=self.listbox_options.get(self.listbox_options.curselection()),
-                                     learning_rate=learning_rate,
-                                     beta_1=beta_1,
-                                     beta_2=beta_2,
-                                     momentum=momentum,
-                                     rho=rho)
+        if  self.listbox_items_builder[-1] == "Convolutional layer":
+            msg.showwarning('Error', 'After the "Convolutional layer" must follow the "Flatten layer"')
+            return
+
+        for i in range(0, len(self.listbox_items_builder) - 1):
+            if self.listbox_items_builder[i] == "Convolutional layer" and self.listbox_items_builder[i+1] != "Flatten layer":
+                msg.showwarning('Error', 'After the "Convolutional layer" must follow the "Flatten layer"')
+                return
+
+
+        try:
+            self.constructorAPI.set_optimizer(algorithm=self.listbox_options.get(self.listbox_options.curselection()),
+                                         learning_rate=learning_rate,
+                                         beta_1=beta_1,
+                                         beta_2=beta_2,
+                                         momentum=momentum,
+                                         rho=rho)
+        except:
+            msg.showwarning('Error', "Choose an option")
+            return
 
         for i in range(0, len(self.layerBuffer)-1):
             temp = self.layerBuffer[i]
@@ -399,14 +413,12 @@ class NNI(tk.Tk):
         self.listbox_folder.delete(0, tk.END)
         list_folders = [name for name in os.listdir("models/") if os.path.isdir(os.path.join("models/", name))]
 
-        print(list_folders)
-
         for item_metrik in list_folders:
             self.listbox_folder.insert(tk.END, item_metrik)
 
-    def stop(self, event):
-        print('stop')
-        print(self.grayscale_val.get())
+    # def stop(self, event):
+    #     pass
+
 
     def openMenuEnter(self, event):
         pass
@@ -481,7 +493,6 @@ class NNI(tk.Tk):
 
     def select_item_metrik(self, event):
         value = (self.listbox_metrik.get(self.listbox_metrik.curselection()))
-        print(value)
 
     def new_layer(self, event):
 
@@ -644,9 +655,6 @@ class NNI(tk.Tk):
         newClass.kernelSize_2 = kernel_size_2
         newClass.filters = filters
         newClass.activations = activation
-        print("kernel Size (", newClass.kernelSize_1, ":", newClass.kernelSize_2, ')')
-        print("Filters =", newClass.filters)
-        print("Activations:", newClass.activations)
         layer.destroy()
         self.listbox_builder.delete(0,tk.END)
         for item in self.listbox_items_builder:
@@ -673,7 +681,6 @@ class NNI(tk.Tk):
         self.layerBuffer.insert(selection[0], newClass)
         newClass.poolSize_1 = pool_size_1
         newClass.poolSize_2 = pool_size_2
-        print("poolSize (", newClass.poolSize_1, " : ", newClass.poolSize_2, ')')
         layer.destroy()
         self.listbox_builder.delete(0, tk.END)
         for item in self.listbox_items_builder:
@@ -698,7 +705,6 @@ class NNI(tk.Tk):
         self.listbox_items_builder.insert(selection[0] + 1, newClass.name)
         self.layerBuffer.insert(selection[0], newClass)
         newClass.neurons = neurons
-        print("neurons=", newClass.neurons)
         layer.destroy()
         self.listbox_builder.delete(0, tk.END)
         for item in self.listbox_items_builder:
@@ -738,7 +744,6 @@ class NNI(tk.Tk):
         self.listbox_items_builder.insert(selection[0] + 1, newClass.name)
         self.layerBuffer.insert(selection[0], newClass)
         newClass.dropNeurons = drop_rate
-        print("dropNeurons", newClass.dropNeurons)
         layer.destroy()
         self.listbox_builder.delete(0, tk.END)
         for item in self.listbox_items_builder:
@@ -754,7 +759,6 @@ class NNI(tk.Tk):
             msg.showerror("Error", "No layer selected")
             return
 
-        print(selection[0])
 
         if len(self.listbox_builder.curselection()) < 1:
             msg.showerror("Error", "No layer selected")
@@ -905,9 +909,6 @@ class NNI(tk.Tk):
         value.kernelSize_1 = kernel_size_1
         value.kernelSize_2 = kernel_size_2
         value.activations = (layer.listbox_conv_layer.get(layer.listbox_conv_layer.curselection()))
-        print("filters=", value.filters)
-        print("kernelSize (", value.kernelSize_1, ':', value.kernelSize_2, ')')
-        print("Activations:", value.activations)
         layer.destroy()
 
     def change_MaxPooling(self, layer):
@@ -924,7 +925,6 @@ class NNI(tk.Tk):
         value = self.layerBuffer[selection[0] - 1]
         value.poolSize_1 = pool_size_1
         value.poolSize_2 = pool_size_2
-        print("poolSize (", value.poolSize_1, ':', value.poolSize_2, ')')
         layer.destroy()
 
     def change_Dense(self, layer):
@@ -939,7 +939,6 @@ class NNI(tk.Tk):
         selection = (self.listbox_builder.curselection())
         value = self.layerBuffer[selection[0] - 1]
         value.neurons = neurons
-        print("neurons=", value.neurons)
         layer.destroy()
 
     def change_Flatten(self, layer):
@@ -957,7 +956,6 @@ class NNI(tk.Tk):
         selection = (self.listbox_builder.curselection())
         value = self.layerBuffer[selection[0] - 1]
         value.dropNeurons = drop_rate
-        print("dropNeurons", value.dropNeurons)
         layer.destroy()
 
     ########################################################
