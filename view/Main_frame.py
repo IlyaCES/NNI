@@ -71,8 +71,8 @@ class NNI(tk.Tk):
         self.lBatch_size.place(x=620, y=240)
         self.lEpochs = tk.Label(builder_tab, text="Epochs:")
         self.lEpochs.place(x=620, y=270)
-        self.lresize_shape = tk.Label(builder_tab, text="Resize shape:")
-        self.lresize_shape.place(x=620, y=300)
+        # self.lresize_shape = tk.Label(builder_tab, text="Resize shape:")
+        # self.lresize_shape.place(x=620, y=300)
         # self.lLearning_metrics = tk.Label(builder_tab, text="Learning metrics:")
         # self.lLearning_metrics.place(x=620, y=210)
         self.lName = tk.Label(self.result_tab, text="Name:")
@@ -93,12 +93,13 @@ class NNI(tk.Tk):
         self.browse_button = tk.Button(builder_tab, text='Browse', font='Arial 10')
         self.browse_button.bind('<Button-1>', self.browse)
         self.browse_button.place(x=1120, y=10)
-        self.start_button = tk.Button(builder_tab, text='Start', font='Arial 10', width=10)
+        self.start_button = tk.Button(builder_tab, text='Start', font='Arial 10', width=15)
         self.start_button.bind('<Button-1>', self.start)
-        self.start_button.place(x=970, y=350)
-        self.stop_button = tk.Button(builder_tab, text='Stop', font='Arial 10', width=10)
-        self.stop_button.bind('<Button-1>', self.stop)
-        self.stop_button.place(x=1080, y=350)
+        self.start_button.place(x=1040, y=350)
+        # self.start_button.place(x=970, y=350)
+        # self.stop_button = tk.Button(builder_tab, text='Stop', font='Arial 10', width=10)
+        # self.stop_button.bind('<Button-1>', self.stop)
+        # self.stop_button.place(x=1080, y=350)
         self.save_button = tk.Button(self.result_tab, text='Save', font='Arial 10', width=10, command=self.save)
         self.save_button.place_forget()
         self.save_button.config(state='disabled')
@@ -143,10 +144,10 @@ class NNI(tk.Tk):
         self.batch_size.place(x=720, y=240)
         self.epochs = tk.Entry(builder_tab, width=74)
         self.epochs.place(x=720, y=270)
-        self.resize_shape_1 = tk.Entry(builder_tab, width=10)
-        self.resize_shape_1.place(x=720, y=300)
-        self.resize_shape_2 = tk.Entry(builder_tab, width=10)
-        self.resize_shape_2.place(x=805, y=300)
+        # self.resize_shape_1 = tk.Entry(builder_tab, width=10)
+        # self.resize_shape_1.place(x=720, y=300)
+        # self.resize_shape_2 = tk.Entry(builder_tab, width=10)
+        # self.resize_shape_2.place(x=805, y=300)
         # invisiable Entrys
         self.learning_rate = tk.Entry(builder_tab, width=74)
         self.learning_rate.place_forget()
@@ -178,14 +179,14 @@ class NNI(tk.Tk):
         self.grayscale_val.set(0)
         self.r1 = tk.Radiobutton(builder_tab, text='Grayscale', variable=self.grayscale_val, value = 1)
         self.r2 = tk.Radiobutton(builder_tab, text='RGB', variable=self.grayscale_val, value = 0)
-        self.r1.place(x=960, y=298)
-        self.r2.place(x=890, y=298)
+        self.r1.place(x=1050+35, y=298)
+        self.r2.place(x=990+35, y=298)
 
 
         for item in listbox_option_items:
             self.listbox_options.insert(tk.END, item)
 
-        self.listbox_builder = tk.Listbox(self.tasks_canvas, width=75, height=8, font=('times', 10), exportselection=False, bd=0)
+        self.listbox_builder = tk.Listbox(self.tasks_canvas, width=56, height=10, font=('times', 12), exportselection=False, bd=0)
         self.listbox_builder.bind('<<ListboxSelect>>')
         self.listbox_builder.place(x=50, y=30)
 
@@ -248,11 +249,14 @@ class NNI(tk.Tk):
             msg.showwarning('Error', 'Missing model name')
             return
 
+        if len(self.name.get()) > 25:
+            msg.showwarning('Error', 'Title exceeds character limit')
+            return
+
         self.constructorAPI.save_model(name=self.name.get())
         self.get_models()
         self.save_button.config(state="disabled")
-
-
+        self.name.delete(0, tk.END)
 
     def browse(self, event):
         self.path.config(state='normal')
