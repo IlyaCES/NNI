@@ -43,7 +43,6 @@ class NNConstructorAPI:
         train_labels = os.listdir(path + '/train')
         if set(test_labels) != set(train_labels):
             raise ValueError('Train and test have different label folders')
-        print(path + '/train', path + '/test', train_labels)
         self.dataset = Dataset(path + '/train', path + '/test', train_labels, grayscale, resize_shape)
 
     def set_optimizer(self, **params):
@@ -57,7 +56,6 @@ class NNConstructorAPI:
         :param rho: rho for RMSProp or Adadelta
         :raises ValueError: If wrong algorithm name is passed
         """
-        print(params)
 
         if params['algorithm'] == 'Adam':
             self.model.optimizer = optimizers.Adam(learning_rate=params['learning_rate'],
@@ -217,6 +215,7 @@ class NNConstructorAPI:
         """Stars training
         :param batch_size: batch size (default = 32)
         :param epochs: number of epochs (default = 5)
+        :param callbacks: callback for keras fit method
         """
 
         y_train = to_categorical(self.dataset.y_train, num_classes=len(self.dataset.labels))
@@ -231,7 +230,6 @@ class NNConstructorAPI:
             x_train = np.asarray(self.dataset.x_train)
             x_test = np.asarray(self.dataset.x_test)
 
-        print(y_test[:5])
         self.model.batch_size = batch_size
         self.model.epochs = epochs
         self.model.fit((x_train / 255, y_train), (x_test / 255, y_test), callbacks=callbacks)

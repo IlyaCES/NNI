@@ -70,7 +70,6 @@ class Dataset(object):
     def _load_y(self, test=False):
         path = self.test_path if test else self.train_path
         y = self._y_test if test else self._y_train
-        print(path, y)
         for class_folder in self._labels:
             y.extend([class_folder] * len(os.listdir(path + '/' + class_folder)))
 
