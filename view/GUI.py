@@ -65,6 +65,8 @@ class NNI(tk.Tk):
         #visiable lebels
         self.lPath = tk.Label(builder_tab, text="Path:")
         self.lPath.place(x=620, y=15)
+        self.lLayers = tk.Label(builder_tab, text="Layers",  font='Arial 10')
+        self.lLayers.place(x=230, y=5)
         self.lLearning_options = tk.Label(builder_tab, text="Learning options:")
         self.lLearning_options.place(x=620, y=45)
         self.lBatch_size = tk.Label(builder_tab, text="Batch size:")
@@ -108,17 +110,17 @@ class NNI(tk.Tk):
         #self.enretLayer_button.bind('<Button-1>', self.openMenuEnter)
         #self.enretLayer_button.place(x=200, y=30)
 
-        self.plus = self.tasks_canvas.create_text(525, 45, text="+",
-                                                  justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
-        self.tasks_canvas.tag_bind(self.plus, '<Button-1>', self.new_layer)
+        self.add_layer_button = self.tasks_canvas.create_text(525, 45, text="+",
+                                                              justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
+        self.tasks_canvas.tag_bind(self.add_layer_button, '<Button-1>', self.new_layer)
 
-        self.minus = self.tasks_canvas.create_text(525, 75, text="-",
-                                                  justify=tk.CENTER, font="Verdana 20", activefill='lightgreen')
-        self.tasks_canvas.tag_bind(self.minus, '<Button-1>', self.delete_layer)
+        self.delete_layer_button = self.tasks_canvas.create_text(525, 75, text="-",
+                                                                 justify=tk.CENTER, font="Verdana 20", activefill='lightgreen')
+        self.tasks_canvas.tag_bind(self.delete_layer_button, '<Button-1>', self.delete_layer)
 
-        self.minus = self.tasks_canvas.create_text(525, 105, text="⚙",
-                                                   justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
-        self.tasks_canvas.tag_bind(self.minus, '<Button-1>', self.change_layer)
+        self.change_layer_button = self.tasks_canvas.create_text(525, 105, text="⚙",
+                                                                 justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
+        self.tasks_canvas.tag_bind(self.change_layer_button, '<Button-1>', self.change_layer)
 
         self.select_model_button = self.storage_canvas.create_text(1120, 185, text="✓",
                                                                    justify=tk.CENTER, font="Verdana 30",
@@ -260,9 +262,9 @@ class NNI(tk.Tk):
 
     def browse(self, event):
         self.path.config(state='normal')
-        self.filename = filedialog.askdirectory(initialdir="/", title="Select directory")
+        self.foldername = filedialog.askdirectory(initialdir="/", title="Select directory")
         self.path.delete(0, tk.END)
-        self.path.insert(0, self.filename)
+        self.path.insert(0, self.foldername)
         self.path.config(state='readonly')
 
     def start(self, event):
@@ -340,16 +342,6 @@ class NNI(tk.Tk):
             msg.showwarning('Error', str(e))
             return
 
-        if  self.listbox_items_builder[-1] == "Convolutional layer":
-            msg.showwarning('Error', 'After the "Convolutional layer" must follow the "Flatten layer"')
-            return
-
-        for i in range(0, len(self.listbox_items_builder) - 1):
-            if self.listbox_items_builder[i] == "Convolutional layer" and self.listbox_items_builder[i+1] != "Flatten layer":
-                msg.showwarning('Error', 'After the "Convolutional layer" must follow the "Flatten layer"')
-                return
-
-
         try:
             self.constructorAPI.set_optimizer(algorithm=self.listbox_options.get(self.listbox_options.curselection()),
                                          learning_rate=learning_rate,
@@ -386,28 +378,36 @@ class NNI(tk.Tk):
         self.x = []
         self.set_plot()
         self.after(100, self.update_plot)
-        self.ThreadedTask(self.queue, self.constructorAPI,
+        self.ThreadedTask(self.notebook ,self.queue, self.constructorAPI,
                           batch_size,
                           epochs,
                           [self.PlotsUpdate(self.queue), self.EndOfTraining(self.save_button, self.notebook)]).start()
 
-        self.notebook.tab(1, state="normal")
-        self.notebook.tab(0, state="disabled")
-        self.notebook.tab(2, state="disabled")
-        self.notebook.select(1)
-
 
     class ThreadedTask(Thread):
-        def __init__(self, queue, api, batch_size, epochs, callbacks):
+        def __init__(self, notebook, queue, api, batch_size, epochs, callbacks):
             Thread.__init__(self, daemon=True)
             self.queue = queue
+            self.notebook = notebook
             self.api = api
             self.batch_size = batch_size
             self.epochs = epochs
             self.callbacks = callbacks
 
         def run(self):
-            self.api.fit(int(self.batch_size), int(self.epochs), callbacks=self.callbacks)
+            self.notebook.tab(1, state="normal")
+            self.notebook.tab(0, state="disabled")
+            self.notebook.tab(2, state="disabled")
+            self.notebook.select(1)
+            try:
+                self.api.fit(int(self.batch_size), int(self.epochs), callbacks=self.callbacks)
+            except:
+                msg.showwarning('Error', "Learning error. The order of the layers is incorrect.")
+                self.notebook.tab(1, state="disabled")
+                self.notebook.tab(0, state="normal")
+                self.notebook.tab(2, state="normal")
+                self.notebook.select(0)
+                return
 
     def get_models(self):
         self.listbox_folder.delete(0, tk.END)
@@ -415,13 +415,6 @@ class NNI(tk.Tk):
 
         for item_metrik in list_folders:
             self.listbox_folder.insert(tk.END, item_metrik)
-
-    # def stop(self, event):
-    #     pass
-
-
-    def openMenuEnter(self, event):
-        pass
 
     def select_lo_item(self, event):
         value = (self.listbox_options.get(self.listbox_options.curselection()))
@@ -490,9 +483,6 @@ class NNI(tk.Tk):
             self.lRho.place(x=620, y=180)
             self.learning_rate.place(x=720, y=150)
             self.rho.place(x=720, y=180)
-
-    def select_item_metrik(self, event):
-        value = (self.listbox_metrik.get(self.listbox_metrik.curselection()))
 
     def new_layer(self, event):
 
@@ -754,7 +744,7 @@ class NNI(tk.Tk):
         selection = (self.listbox_builder.curselection())
 
         try:
-            print((self.listbox_builder.get(self.listbox_builder.curselection())))
+            error_delete = self.listbox_builder.get(self.listbox_builder.curselection())
         except:
             msg.showerror("Error", "No layer selected")
             return
@@ -781,7 +771,7 @@ class NNI(tk.Tk):
 
         selection = (self.listbox_builder.curselection())
         try:
-            print((self.listbox_builder.get(self.listbox_builder.curselection())))
+            error_change = self.listbox_builder.get(self.listbox_builder.curselection())
         except:
             msg.showerror("Error", "No layer selected")
             return
@@ -861,6 +851,7 @@ class NNI(tk.Tk):
             layer.add_button.place(x=100, y=225)
             layer.listbox_conv_layer.place(x=195, y=75)
             layer.lActivations.place(x=65, y=75)
+            layer.listbox_conv_layer.select_set(0)
         if value.name == 'Max pooling layer':
             layer.lPoolSize.place(x=65, y=15)
             layer.poolSize_1.place(x=195, y=15)
