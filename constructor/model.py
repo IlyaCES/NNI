@@ -42,9 +42,6 @@ class Model(object):
 
         self.layers.remove(layer)
 
-    def swap_layers(self):
-        pass
-
     def save(self, path, name):
         """Saves model as 2 files: NAME.h5 and NAME.pkl at path
 
@@ -91,7 +88,7 @@ class Model(object):
         :param train_data: (x_train, y_train)
         :param validation_data: (x_valid, y_valid)
         """
-        callbacks = [LossAndAccuracyUpdate(model=self)] + callbacks
+        callbacks = [LossAndAccuracyUpdate(model=self)] + (callbacks if callbacks else [])
         history = self._model.fit(*train_data,
                                   batch_size=self.batch_size,
                                   epochs=self.epochs,

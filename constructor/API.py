@@ -75,7 +75,8 @@ class NNConstructorAPI:
         else:
             raise ValueError()
 
-    def get_activation(self, name):
+    @staticmethod
+    def get_activation(name):
         """Returns activation function
 
         :param name: relu, sigmoid or tanh
@@ -201,12 +202,13 @@ class NNConstructorAPI:
 
         self.dataset.load_data()
 
-        if type(self.model.layers[0]) is Conv2D:
+        if isinstance(self.model.layers[0], Conv2D):
+            shape = self.dataset.x_train[0].shape
             if self.dataset.grayscale:
-                self.model.add_layer(Input(shape=(28, 28, 1)), 0)
+                self.model.add_layer(Input(shape=(*shape, 1)), 0)
             else:
-                self.model.add_layer(Input(shape=(28, 28, 3)), 0)
-        elif type(self.model.layers[0]) is Dense:
+                self.model.add_layer(Input(shape=shape), 0)
+        elif isinstance(self.model.layers[0], Dense):
             self.model.add_layer(Flatten(), 0)
         self.model.add_layer(Dense(len(self.dataset.labels), activation='softmax'))
         self.model.build()
