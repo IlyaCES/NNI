@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock, mock_open, call
 
 import numpy as np
 
-import API
+from constructor.API import *
 
 
 class TestAPIStatic(unittest.TestCase):

@@ -73,10 +73,6 @@ class NNI(tk.Tk):
         self.lBatch_size.place(x=620, y=240)
         self.lEpochs = tk.Label(builder_tab, text="Epochs:")
         self.lEpochs.place(x=620, y=270)
-        # self.lresize_shape = tk.Label(builder_tab, text="Resize shape:")
-        # self.lresize_shape.place(x=620, y=300)
-        # self.lLearning_metrics = tk.Label(builder_tab, text="Learning metrics:")
-        # self.lLearning_metrics.place(x=620, y=210)
         self.lName = tk.Label(self.result_tab, text="Name:")
         self.lName.place(x=720, y=15)
         #invisiable lebels
@@ -98,17 +94,9 @@ class NNI(tk.Tk):
         self.start_button = tk.Button(builder_tab, text='Start', font='Arial 10', width=15)
         self.start_button.bind('<Button-1>', self.start)
         self.start_button.place(x=1040, y=350)
-        # self.start_button.place(x=970, y=350)
-        # self.stop_button = tk.Button(builder_tab, text='Stop', font='Arial 10', width=10)
-        # self.stop_button.bind('<Button-1>', self.stop)
-        # self.stop_button.place(x=1080, y=350)
         self.save_button = tk.Button(self.result_tab, text='Save', font='Arial 10', width=10, command=self.save)
         self.save_button.place_forget()
         self.save_button.config(state='disabled')
-
-        #self.enretLayer_button = tk.Button(self.tasks_canvas, width=20, height=2, text='Default Enter layer', font='Arial 10')
-        #self.enretLayer_button.bind('<Button-1>', self.openMenuEnter)
-        #self.enretLayer_button.place(x=200, y=30)
 
         self.add_layer_button = self.tasks_canvas.create_text(525, 45, text="+",
                                                               justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
@@ -133,7 +121,7 @@ class NNI(tk.Tk):
         self.storage_canvas.tag_bind(self.select_model_button, '<Button-1>', self.select_model)
 
     #Text area
-        self.log = tk.Text(self.result_tab, width=55, height=30)
+        self.log = tk.Text(self.result_tab, width=55, height=30, state='disabled')
         self.log.place(x=710, y=50)
 
     #Create Entrys
@@ -146,10 +134,6 @@ class NNI(tk.Tk):
         self.batch_size.place(x=720, y=240)
         self.epochs = tk.Entry(builder_tab, width=74)
         self.epochs.place(x=720, y=270)
-        # self.resize_shape_1 = tk.Entry(builder_tab, width=10)
-        # self.resize_shape_1.place(x=720, y=300)
-        # self.resize_shape_2 = tk.Entry(builder_tab, width=10)
-        # self.resize_shape_2.place(x=805, y=300)
         # invisiable Entrys
         self.learning_rate = tk.Entry(builder_tab, width=74)
         self.learning_rate.place_forget()
@@ -201,21 +185,27 @@ class NNI(tk.Tk):
         self.listbox_folder.bind('<<ListboxSelect>>')
         self.listbox_folder.place(x=50, y=30)
 
-        # listbox_items_metrik = ['binary_accuracy', 'categorical_accuracy', 'sparse_categorical_accuracy',
-        #                         'top_k_categorical_accuracy', 'sparse_top_k_categorical_accuracy']
-        # self.listbox_metrik = tk.Listbox(builder_tab, width=74, height=5, font=('times', 10), exportselection=False)
-        # self.listbox_metrik.bind('<<ListboxSelect>>', self.select_item_metrik)
-        # self.listbox_metrik.place(x=720, y=210)
-        #
-        # for item_metrik in listbox_items_metrik:
-        #     self.listbox_metrik.insert(tk.END, item_metrik)
         self.get_models()
         self.notebook.pack(fill=tk.BOTH, expand=1)
 
+    def msgError(self, value):
+        layer = tk.Toplevel()
+        layer.title("Error")
+        layer.geometry("300x95")
+        layer.resizable(width=False, height=False)
+        tk.Message(layer, text=value, width=200, pady=20).pack()
+        layer.clous_button = tk.Button(layer, width=10, height=1, text='Cancel',
+                                       font='Arial 10')
+        layer.clous_button.bind('<Button-1>', lambda event: layer.destroy())
+        layer.clous_button.place(x=100, y=50)
+
     def delete_model(self, event):
 
-        if len(self.listbox_folder.curselection()) < 1:
-            msg.showerror("Error", "No layer selected")
+        try:
+            if len(self.listbox_folder.curselection()) < 1:
+                raise ValueError()
+        except ValueError:
+            self.msgError("No model selected")
             return
 
         self.constructorAPI.delete_model(name=(self.listbox_folder.get(self.listbox_folder.curselection())))
@@ -223,8 +213,11 @@ class NNI(tk.Tk):
 
     def select_model(self, event):
 
-        if len(self.listbox_folder.curselection()) < 1:
-            msg.showerror("Error", "No layer selected")
+        try:
+            if len(self.listbox_folder.curselection()) < 1:
+                raise ValueError()
+        except ValueError:
+            self.msgError("No model selected")
             return
 
         self.constructorAPI.load_model(name=(self.listbox_folder.get(self.listbox_folder.curselection())))
@@ -234,26 +227,34 @@ class NNI(tk.Tk):
                                                                       'val_accuracy': self.constructorAPI.model.val_accuracy,
                                                                       'loss': self.constructorAPI.model.loss,
                                                                       'val_loss': self.constructorAPI.model.val_loss})
-
+        self.log.config(state='disabled')
         self.log.delete(1.0, tk.END)
         self.log.insert(tk.END, 'Model was trained for ' + str(self.constructorAPI.model.epochs) + ' epochs\n')
         self.log.insert(tk.END, 'Total training accuracy: ' + str(self.constructorAPI.model.accuracy[-1]) + '\n')
         self.log.insert(tk.END, 'Total validation accuracy: ' + str(self.constructorAPI.model.val_accuracy[-1]) + '\n')
         self.log.insert(tk.END, 'Total training loss: ' + str(self.constructorAPI.model.loss[-1]) + '\n')
         self.log.insert(tk.END, 'Total validation loss: ' + str(self.constructorAPI.model.val_loss[-1]) + '\n')
+        self.log.config(state='normal')
 
         self.notebook.tab(1, state="normal")
         self.notebook.select(1)
 
     def save(self):
 
-        if len(self.name.get()) == 0:
-            msg.showwarning('Error', 'Missing model name')
+        try:
+            if len(self.name.get()) == 0:
+                raise ValueError()
+        except ValueError:
+            self.msgError('Missing model name')
             return
 
-        if len(self.name.get()) > 25:
-            msg.showwarning('Error', 'Title exceeds character limit')
+        try:
+            if len(self.name.get()) > 25:
+                raise ValueError()
+        except ValueError:
+            self.msgError('Title exceeds character limit')
             return
+
 
         self.constructorAPI.save_model(name=self.name.get())
         self.get_models()
@@ -274,7 +275,7 @@ class NNI(tk.Tk):
             if learning_rate < 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Learning rate should be a float number >= 0')
+            self.msgError('Learning rate should be a float number >= 0')
             return
 
         try:
@@ -282,14 +283,14 @@ class NNI(tk.Tk):
             if beta_1 <= 0 or beta_1 >= 1:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Beta 1 should be a float number: 0 < beta_1 < 1')
+            self.msgError('Beta 1 should be a float number: 0 < beta_1 < 1')
 
         try:
             beta_2 = float(self.beta_2.get())
             if beta_2 <= 0 or beta_2 >= 1:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Beta 2 should be a float number: 0 < beta_2 < 1')
+            self.msgError('Beta 2 should be a float number: 0 < beta_2 < 1')
             return
 
         try:
@@ -297,7 +298,7 @@ class NNI(tk.Tk):
             if momentum < 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Momentum should be a float number >= 0')
+            self.msgError('Momentum should be a float number >= 0')
             return
 
         try:
@@ -305,7 +306,7 @@ class NNI(tk.Tk):
             if rho < 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Rho should be a float number >= 0')
+            self.msgError('Rho should be a float number >= 0')
             return
 
         try:
@@ -313,7 +314,7 @@ class NNI(tk.Tk):
             if batch_size <= 0 or batch_size > 256:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Batch size should be an integer between 1 and 256')
+            self.msgError('Batch size should be an integer between 1 and 256')
             return
 
         try:
@@ -321,9 +322,8 @@ class NNI(tk.Tk):
             if epochs <= 0 or epochs > 1000:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Number of epochs should be an integer between 1 and 10000')
+            self.msgError('Number of epochs should be an integer between 1 and 10000')
             return
-
 
         path = self.path.get()
 
@@ -334,12 +334,12 @@ class NNI(tk.Tk):
             self.constructorAPI.set_data(path, grayscale=self.grayscale_val.get())
         except FileNotFoundError:
             if not path:
-                msg.showwarning('Error', 'You need to enter path to data')
+                self.msgError('You need to enter path to data')
             else:
-                msg.showwarning('Error', 'System can not find path: ' + path)
+                self.msgError('System can not find path: ' + path)
             return
         except ValueError as e:
-            msg.showwarning('Error', str(e))
+            self.msgError(str(e))
             return
 
         try:
@@ -350,7 +350,7 @@ class NNI(tk.Tk):
                                          momentum=momentum,
                                          rho=rho)
         except:
-            msg.showwarning('Error', "Choose an option")
+            self.msgError("Choose an option")
             return
 
         for i in range(0, len(self.layerBuffer)-1):
@@ -370,7 +370,7 @@ class NNI(tk.Tk):
         try:
             self.constructorAPI.build()
         except ValueError as e:
-            msg.showwarning('Error', str(e))
+            self.msgError(str(e))
             return
 
         self.queue = queue.Queue()
@@ -402,7 +402,7 @@ class NNI(tk.Tk):
             try:
                 self.api.fit(int(self.batch_size), int(self.epochs), callbacks=self.callbacks)
             except:
-                msg.showwarning('Error', "Learning error. The order of the layers is incorrect.")
+                msg.showwarning('Info', "No results for model with incorrect layers order.")
                 self.notebook.tab(1, state="disabled")
                 self.notebook.tab(0, state="normal")
                 self.notebook.tab(2, state="normal")
@@ -432,11 +432,9 @@ class NNI(tk.Tk):
             self.learning_rate.delete(0, tk.END)
             self.beta_1.delete(0, tk.END)
             self.beta_2.delete(0, tk.END)
-
             self.learning_rate.insert(0, "0.001")
             self.beta_1.insert(0, "0.9")
             self.beta_2.insert(0, "0.999")
-
             self.lLearning_rate.place(x=620, y=150)
             self.lBeta_1.place(x=620, y=180)
             self.lBeta_2.place(x=620, y=210)
@@ -446,10 +444,8 @@ class NNI(tk.Tk):
         if value == 'SGD':
             self.learning_rate.delete(0, tk.END)
             self.momentum.delete(0, tk.END)
-
             self.learning_rate.insert(0, "0.01")
             self.momentum.insert(0, "0")
-
             self.lLearning_rate.place(x=620, y=150)
             self.lMomentum.place(x=620, y=180)
             self.learning_rate.place(x=720, y=150)
@@ -457,28 +453,22 @@ class NNI(tk.Tk):
         if value == 'RMSProp':
             self.learning_rate.delete(0, tk.END)
             self.rho.delete(0, tk.END)
-
             self.learning_rate.insert(0, "0.001")
             self.rho.insert(0, "0.9")
-
             self.lLearning_rate.place(x=620, y=150)
             self.lRho.place(x=620, y=180)
             self.learning_rate.place(x=720, y=150)
             self.rho.place(x=720, y=180)
         if value == 'Adagrad':
             self.learning_rate.delete(0, tk.END)
-
             self.learning_rate.insert(0, "0.01")
-
             self.lLearning_rate.place(x=620, y=150)
             self.learning_rate.place(x=720, y=150)
         if value == 'Adadelta':
             self.learning_rate.delete(0, tk.END)
             self.rho.delete(0, tk.END)
-
             self.learning_rate.insert(0, "1")
             self.rho.insert(0, "0.95")
-
             self.lLearning_rate.place(x=620, y=150)
             self.lRho.place(x=620, y=180)
             self.learning_rate.place(x=720, y=150)
@@ -486,11 +476,14 @@ class NNI(tk.Tk):
 
     def new_layer(self, event):
 
-        if len(self.listbox_builder.curselection()) < 1:
-            msg.showerror("Error", "No layer selected")
+        try:
+            if len(self.listbox_builder.curselection()) < 1:
+                raise ValueError()
+        except ValueError:
+            self.msgError("No layer selected")
             return
 
-        layer = tk.Toplevel(self)
+        layer = self.layer = tk.Toplevel(self)
         layer.title("Add layer")
         layer.geometry("450x310")
         layer.resizable(width=False, height=False)
@@ -558,7 +551,7 @@ class NNI(tk.Tk):
         layer.clous_button.place(x=250, y=265)
 
     def eror_selected(self, event):
-        msg.showerror("Error", "No architecture selected")
+        self.msgError("No architecture selected")
 
     def select_layer(event, layer, self):
         value = (layer.listbox_layer.get(layer.listbox_layer.curselection()))
@@ -620,7 +613,7 @@ class NNI(tk.Tk):
             if kernel_size_1 <= 0 or kernel_size_2 <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Kernel size should be a pair of ints > 0')
+            self.msgError('Kernel size should be a pair of ints > 0')
             return
 
         try:
@@ -628,7 +621,7 @@ class NNI(tk.Tk):
             if filters <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Number of filters should be a positive integer')
+            self.msgError('Number of filters should be a positive integer')
             return
 
         activation = (layer.listbox_conv_layer.get(layer.listbox_conv_layer.curselection()))
@@ -658,7 +651,7 @@ class NNI(tk.Tk):
             if pool_size_1 <= 0 or pool_size_2 <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Pool size should be a pair of ints > 0')
+            self.msgError('Pool size should be a pair of ints > 0')
             return
 
         newClass = self.layerMaxPooling()
@@ -683,7 +676,7 @@ class NNI(tk.Tk):
             if neurons <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Number of neurons should be a positive integer')
+            self.msgError('Number of neurons should be a positive integer')
             return
 
         newClass = self.layerDense()
@@ -746,17 +739,15 @@ class NNI(tk.Tk):
         try:
             error_delete = self.listbox_builder.get(self.listbox_builder.curselection())
         except:
-            msg.showerror("Error", "No layer selected")
+            self.msgError("No layer selected")
             return
 
-
-        if len(self.listbox_builder.curselection()) < 1:
-            msg.showerror("Error", "No layer selected")
-            return
-
-        if (self.listbox_builder.get(tk.ANCHOR) == 'Default Enter layer') or (
-                self.listbox_builder.get(tk.ANCHOR) == 'Default Exit layer'):
-            msg.showerror("Error", "Unable to delete static layers")
+        try:
+            if (self.listbox_builder.get(tk.ANCHOR) == 'Default Enter layer') or (
+                    self.listbox_builder.get(tk.ANCHOR) == 'Default Exit layer'):
+                raise ValueError()
+        except ValueError:
+            self.msgError("Wrong layer selected")
             return
 
         del self.listbox_items_builder[selection[0]]
@@ -773,21 +764,27 @@ class NNI(tk.Tk):
         try:
             error_change = self.listbox_builder.get(self.listbox_builder.curselection())
         except:
-            msg.showerror("Error", "No layer selected")
+            self.msgError("No layer selected")
             return
 
         value = self.layerBuffer[selection[0] - 1]
 
-        if ((self.listbox_builder.get(self.listbox_builder.curselection())) == 'Default Enter layer') \
-                or ((self.listbox_builder.get(self.listbox_builder.curselection())) == 'Default Exit layer'):
-            msg.showerror("Error", "Unable to change static layers")
+        try:
+            if ((self.listbox_builder.get(self.listbox_builder.curselection())) == 'Default Enter layer') \
+                    or ((self.listbox_builder.get(self.listbox_builder.curselection())) == 'Default Exit layer'):
+                raise ValueError()
+        except ValueError:
+            self.msgError("Unable to change static layers")
             return
 
-        if value.name == "Flatten layer":
-            msg.showwarning('Warning', 'Flatten impossible to change')
+        try:
+            if value.name == "Flatten layer":
+                raise ValueError()
+        except ValueError:
+            self.msgError('Flatten impossible to change')
             return
 
-        layer = tk.Toplevel(self)
+        layer = self.layer = tk.Toplevel(self)
         layer.title("Change layer")
         layer.geometry("450x270")
         layer.resizable(width=False, height=False)
@@ -883,7 +880,7 @@ class NNI(tk.Tk):
             if kernel_size_1 <= 0 or kernel_size_2 <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Kernel size should be a pair of ints > 0')
+            self.msgError('Kernel size should be a pair of ints > 0')
             return
 
         try:
@@ -891,7 +888,7 @@ class NNI(tk.Tk):
             if filters <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Number of filters should be a positive integer')
+            self.msgError('Number of filters should be a positive integer')
             return
 
         selection = (self.listbox_builder.curselection())
@@ -909,7 +906,7 @@ class NNI(tk.Tk):
             if pool_size_1 <= 0 or pool_size_2 <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Pool size should be a pair of ints > 0')
+            self.msgError('Pool size should be a pair of ints > 0')
             return
 
         selection = (self.listbox_builder.curselection())
@@ -924,7 +921,7 @@ class NNI(tk.Tk):
             if neurons <= 0:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Number of neurons should be a positive integer')
+            self.msgError('Number of neurons should be a positive integer')
             return
 
         selection = (self.listbox_builder.curselection())
@@ -933,7 +930,7 @@ class NNI(tk.Tk):
         layer.destroy()
 
     def change_Flatten(self, layer):
-        msg.showwarning('Warning', 'Flatten impossible to change')
+        self.msgError('Flatten impossible to change')
 
     def change_Dropout(self, layer):
         try:
@@ -941,7 +938,7 @@ class NNI(tk.Tk):
             if not 0 <= drop_rate < 1:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Drop rate should be a float number between 0 and 1')
+            self.msgError('Drop rate should be a float number between 0 and 1')
             return
 
         selection = (self.listbox_builder.curselection())
@@ -959,9 +956,11 @@ class NNI(tk.Tk):
             self.text = text_field
 
         def write(self, message):
+            self.text.config(state='normal')
             self.terminal.write(message)
             self.text.insert(tk.END, message)
             self.text.see(tk.END)
+            self.text.config(state='disabled')
 
         def flush(self):
             pass
@@ -974,8 +973,6 @@ class NNI(tk.Tk):
         kernelSize_2 = 3
         activations = 'relu'
 
-        def getNumber(self):
-            print(self.number)
 
     class layerMaxPooling:
         name = "Max pooling layer"
@@ -983,31 +980,19 @@ class NNI(tk.Tk):
         poolSize_1 = 2
         poolSize_2 = 2
 
-        def getNumber(self):
-            print(self.number)
-
     class layerDense:
         name = "Dense layer"
         number = 0
         neurons = 64
 
-        def getNumber(self):
-            print(self.number)
-
     class layerFlatten:
         name = "Flatten layer"
         number = 0
-
-        def getNumber(self):
-            print(self.number)
 
     class layerDropout:
         name = "Dropout layer"
         number = 0
         dropNeurons = 0.5
-
-        def getNumber(self):
-            print(self.number)
 
     class PlotsUpdate(Callback):
         def __init__(self, queue):
