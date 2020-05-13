@@ -77,7 +77,7 @@ class Model(object):
             self._model.add(layer)
 
         if self.optimizer is None:
-            self.optimizer = optimizers.Adam()  # raise ValueError('Optimizer is not setted')
+            self.optimizer = optimizers.Adam()
         self._model.compile(optimizer=self.optimizer,
                             loss='categorical_crossentropy',
                             metrics=['accuracy'])
