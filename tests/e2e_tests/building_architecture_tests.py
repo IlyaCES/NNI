@@ -2,7 +2,7 @@ import tkinter as tk
 import unittest
 from unittest.mock import Mock
 
-from ..test_Gui import TKinterTestCase
+from ..test_GUI import TKinterTestCase
 
 class TestModelList(TKinterTestCase):
     def test_list_layers_enter(self):

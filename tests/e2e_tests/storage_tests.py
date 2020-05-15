@@ -14,7 +14,7 @@ class TestModelLoad(TKinterTestCase):
         self.root.listbox_folder.select_set(0)
         self.pump_events()
 
-        self.root.select_model('<Button-1>')
+        self.root.select_model_button.invoke()
 
         self.pump_events()
 
@@ -26,7 +26,7 @@ class TestModelLoad(TKinterTestCase):
         # Load model
         self.root.listbox_folder.select_set(0)
         self.pump_events()
-        self.root.select_model('<Button-1>')
+        self.root.select_model_button.invoke()
 
         text = self.root.log.get(1.0, 'end')
         loss_plot = self.root.loss_plot
@@ -39,7 +39,7 @@ class TestModelLoad(TKinterTestCase):
         self.root.listbox_folder.select_set(1)
         self.pump_events()
 
-        self.root.select_model('<Button-1>')
+        self.root.select_model_button.invoke()
 
         self.pump_events()
 
@@ -69,7 +69,7 @@ class TestDeleteModel(TKinterTestCase):
                 self.root.listbox_folder.select_set(i)
                 break
         self.pump_events()
-        self.root.delete_model('<Button-2>')
+        self.root.delete_model_button.invoke()
 
         self.assertFalse(Path('models/test_model/test_model.pkl').exists())
         self.assertFalse(Path('models/test_model/test_model.h5').exists())
@@ -78,7 +78,7 @@ class TestDeleteModel(TKinterTestCase):
         self.pump_events()
         self.root.msgError = Mock()
 
-        self.root.delete_model('<Button-2>')
+        self.root.delete_model_button.invoke()
 
         self.root.msgError.assert_called_once()
 
