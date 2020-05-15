@@ -87,8 +87,8 @@ class Model(object):
 
         :param train_data: (x_train, y_train)
         :param validation_data: (x_valid, y_valid)
+        :param callbacks: [callback_1, callback_2] for keras.fit
         """
-        callbacks = [LossAndAccuracyUpdate(model=self)] + (callbacks if callbacks else [])
         history = self._model.fit(*train_data,
                                   batch_size=self.batch_size,
                                   epochs=self.epochs,
@@ -96,19 +96,7 @@ class Model(object):
                                   validation_data=validation_data,
                                   callbacks=callbacks)
 
-        # self.loss = history.history['loss']
-        # self.val_loss = history.history['val_loss']
-        # self.accuracy = history.history['accuracy']
-        # self.val_accuracy = history.history['val_accuracy']
-
-
-class LossAndAccuracyUpdate(Callback):
-    def __init__(self, model):
-        super(Callback, self).__init__()
-        self.my_model = model
-
-    def on_epoch_end(self, epoch, logs=None):
-        self.my_model.loss.append(logs['loss'])
-        self.my_model.val_loss.append(logs['val_loss'])
-        self.my_model.accuracy.append(logs['accuracy'])
-        self.my_model.val_accuracy.append(logs['val_accuracy'])
+        self.loss = history.history['loss']
+        self.val_loss = history.history['val_loss']
+        self.accuracy = history.history['accuracy']
+        self.val_accuracy = history.history['val_accuracy']

@@ -115,14 +115,13 @@ class TestModelFit(unittest.TestCase):
 
         self.internal_model = Mock()
         self.internal_model.fit = self.mock_fit
+        self.internal_model.fit.return_value.history = {'loss': [], 'val_loss': [], 'accuracy': [], 'val_accuracy': []}
 
         self.model._model = self.internal_model
         self.model.batch_size = 32
         self.model.epochs = 10
 
-    @patch('model.LossAndAccuracyUpdate')
-    def test_fit(self, mock_loss_and_accuracy_update):
-        mock_loss_and_accuracy_update.return_value = Mock()
+    def test_fit(self):
 
         train_data = [[1], [2]]
         verbose = 1
@@ -130,13 +129,12 @@ class TestModelFit(unittest.TestCase):
 
         self.model.fit(train_data, validation_data)
 
-        mock_loss_and_accuracy_update.assert_called_once_with(model=self.model)
         self.model._model.fit.assert_called_once_with(*train_data,
                                                       batch_size=self.model.batch_size,
                                                       epochs=self.model.epochs,
                                                       verbose=verbose,
                                                       validation_data=validation_data,
-                                                      callbacks=[mock_loss_and_accuracy_update.return_value])
+                                                      callbacks=None)
 
 
 if __name__ == '__main__':
