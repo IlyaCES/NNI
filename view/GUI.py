@@ -88,37 +88,48 @@ class NNI(tk.Tk):
         self.lRho.place_forget()
 
     #Create Buttons
-        self.browse_button = tk.Button(builder_tab, text='Browse', font='Arial 10')
-        self.browse_button.bind('<Button-1>', self.browse)
+        self.browse_button = tk.Button(builder_tab, text='Browse', font='Arial 10', command=self.browse)
+        #self.browse_button.bind('<Button-1>', self.browse)
         self.browse_button.place(x=1120, y=10)
-        self.start_button = tk.Button(builder_tab, text='Start', font='Arial 10', width=15)
-        self.start_button.bind('<Button-1>', self.start)
+        self.start_button = tk.Button(builder_tab, text='Start', font='Arial 10', width=15, command=self.start)
         self.start_button.place(x=1040, y=350)
         self.save_button = tk.Button(self.result_tab, text='Save', font='Arial 10', width=10, command=self.save)
         self.save_button.place_forget()
         self.save_button.config(state='disabled')
 
-        self.add_layer_button = self.tasks_canvas.create_text(525, 45, text="+",
-                                                              justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
-        self.tasks_canvas.tag_bind(self.add_layer_button, '<Button-1>', self.new_layer)
+        self.add_layer_button = tk.Button(self.tasks_canvas, text='+', font='Arial 10', width=3, command=self.new_layer)
+        self.add_layer_button.place(x=510, y=35)
+        self.delete_layer_button = tk.Button(self.tasks_canvas, text='-', font='Arial 10', width=3, command=self.delete_layer)
+        self.delete_layer_button.place(x=510, y=70)
+        self.change_layer_button = tk.Button(self.tasks_canvas, text='⚙', font='Arial 10', width=3, command=self.change_layer)
+        self.change_layer_button.place(x=510, y=105)
+        #self.add_layer_button = self.tasks_canvas.create_text(525, 45, text="+", justify=tk.CENTER, font="Verdana 18", activefill='lightgreen', command=self.save)
+        #self.tasks_canvas.tag_bind(self.add_layer_button, '<Button-1>', self.new_layer)
 
-        self.delete_layer_button = self.tasks_canvas.create_text(525, 75, text="-",
-                                                                 justify=tk.CENTER, font="Verdana 20", activefill='lightgreen')
-        self.tasks_canvas.tag_bind(self.delete_layer_button, '<Button-1>', self.delete_layer)
+        # self.delete_layer_button = self.tasks_canvas.create_text(525, 75, text="-",
+        #                                                          justify=tk.CENTER, font="Verdana 20", activefill='lightgreen')
+        # self.tasks_canvas.tag_bind(self.delete_layer_button, '<Button-1>', delete_layer)
 
-        self.change_layer_button = self.tasks_canvas.create_text(525, 105, text="⚙",
-                                                                 justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
-        self.tasks_canvas.tag_bind(self.change_layer_button, '<Button-1>', self.change_layer)
+        # self.change_layer_button = self.tasks_canvas.create_text(525, 105, text="⚙",
+        #                                                          justify=tk.CENTER, font="Verdana 18", activefill='lightgreen')
+        # self.tasks_canvas.tag_bind(self.change_layer_button, '<Button-1>', self.change_layer)
 
-        self.select_model_button = self.storage_canvas.create_text(1120, 185, text="✓",
-                                                                   justify=tk.CENTER, font="Verdana 30",
-                                                                   activefill='lightgreen')
+        self.select_model_button = tk.Button(self.storage_canvas, text='✓', font='Arial 20', width=5,
+                                             command=self.select_model)
+        self.select_model_button.place(x=1080, y=185)
+        self.delete_model_button = tk.Button(self.storage_canvas, text='-', font='Arial 20', width=5,
+                                             command=self.delete_model)
+        self.delete_model_button.place(x=1080, y=325)
 
-        self.delete_model_button = self.storage_canvas.create_text(1120, 325, text="-",
-                                                                   justify=tk.CENTER, font="Verdana 35",
-                                                                   activefill='lightgreen')
-        self.storage_canvas.tag_bind(self.delete_model_button, '<Button-1>', self.delete_model)
-        self.storage_canvas.tag_bind(self.select_model_button, '<Button-1>', self.select_model)
+        # self.select_model_button = self.storage_canvas.create_text(1120, 185, text="✓",
+        #                                                            justify=tk.CENTER, font="Verdana 30",
+        #                                                            activefill='lightgreen')
+        #
+        # self.delete_model_button = self.storage_canvas.create_text(1120, 325, text="-",
+        #                                                            justify=tk.CENTER, font="Verdana 35",
+        #                                                            activefill='lightgreen')
+        # self.storage_canvas.tag_bind(self.delete_model_button, '<Button-1>', self.delete_model)
+        # self.storage_canvas.tag_bind(self.select_model_button, '<Button-1>', self.select_model)
 
     #Text area
         self.log = tk.Text(self.result_tab, width=55, height=30, state='disabled')
@@ -199,7 +210,7 @@ class NNI(tk.Tk):
         layer.clous_button.bind('<Button-1>', lambda event: layer.destroy())
         layer.clous_button.place(x=100, y=50)
 
-    def delete_model(self, event):
+    def delete_model(self):
 
         try:
             if len(self.listbox_folder.curselection()) < 1:
@@ -211,7 +222,7 @@ class NNI(tk.Tk):
         self.constructorAPI.delete_model(name=(self.listbox_folder.get(self.listbox_folder.curselection())))
         self.get_models()
 
-    def select_model(self, event):
+    def select_model(self):
 
         try:
             if len(self.listbox_folder.curselection()) < 1:
@@ -261,14 +272,14 @@ class NNI(tk.Tk):
         self.save_button.config(state="disabled")
         self.name.delete(0, tk.END)
 
-    def browse(self, event):
+    def browse(self):
         self.path.config(state='normal')
         self.foldername = filedialog.askdirectory(initialdir="/", title="Select directory")
         self.path.delete(0, tk.END)
         self.path.insert(0, self.foldername)
         self.path.config(state='readonly')
 
-    def start(self, event):
+    def start(self):
 
         try:
             learning_rate = float(self.learning_rate.get())
@@ -474,7 +485,7 @@ class NNI(tk.Tk):
             self.learning_rate.place(x=720, y=150)
             self.rho.place(x=720, y=180)
 
-    def new_layer(self, event):
+    def new_layer(self):
 
         try:
             if len(self.listbox_builder.curselection()) < 1:
@@ -490,7 +501,7 @@ class NNI(tk.Tk):
 
         listbox_item_layer = ['Convolutional', 'MaxPooling', 'Dense', 'Flatten', 'Dropout']
         layer.listbox_layer = tk.Listbox(layer, width=50, height=5, font=('times', 10), exportselection=False)
-        layer.listbox_layer.bind('<<ListboxSelect>>',lambda event: self.select_layer(layer, self))
+        layer.listbox_layer.bind('<<ListboxSelect>>' ,lambda event: self.select_layer(layer, self))
         layer.listbox_layer.place(x=65, y=30)
 
         listbox_conv_layer = ['relu', 'sigmoid', 'tanh']
@@ -541,8 +552,7 @@ class NNI(tk.Tk):
         layer.listbox_conv_layer.select_set(0)
 
         layer.add_button = tk.Button(layer, width=10, height=1, text='Add',
-                                       font='Arial 10')
-        layer.add_button.bind('<Button-1>', self.eror_selected)
+                                       font='Arial 10', command=self.eror_selected)
         layer.add_button.place(x=100, y=265)
 
         layer.clous_button = tk.Button(layer, width=10, height=1, text='Cancel',
@@ -550,7 +560,7 @@ class NNI(tk.Tk):
         layer.clous_button.bind('<Button-1>', lambda event: layer.destroy())
         layer.clous_button.place(x=250, y=265)
 
-    def eror_selected(self, event):
+    def eror_selected(self):
         self.msgError("No architecture selected")
 
     def select_layer(event, layer, self):
@@ -715,7 +725,7 @@ class NNI(tk.Tk):
             if not 0 <= drop_rate < 1:
                 raise ValueError()
         except ValueError:
-            msg.showwarning('Error', 'Drop rate should be a float number between 0 and 1')
+            self.msgError('Drop rate should be a float number between 0 and 1')
             return
 
         newClass = self.layerDropout()
@@ -733,7 +743,7 @@ class NNI(tk.Tk):
             self.listbox_builder.insert(tk.END, item)
         self.listbox_builder.insert(tk.END, 'Default Exit layer')
 
-    def delete_layer(self, event):
+    def delete_layer(self):
         selection = (self.listbox_builder.curselection())
 
         try:
@@ -758,7 +768,7 @@ class NNI(tk.Tk):
             self.listbox_builder.insert(tk.END, item)
         self.listbox_builder.insert(tk.END, 'Default Exit layer')
 
-    def change_layer(self, event):
+    def change_layer(self):
 
         selection = (self.listbox_builder.curselection())
         try:
@@ -931,6 +941,7 @@ class NNI(tk.Tk):
 
     def change_Flatten(self, layer):
         self.msgError('Flatten impossible to change')
+        raise ValueError
 
     def change_Dropout(self, layer):
         try:
