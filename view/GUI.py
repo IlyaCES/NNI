@@ -238,15 +238,14 @@ class NNI(tk.Tk):
                                                                       'val_accuracy': self.constructorAPI.model.val_accuracy,
                                                                       'loss': self.constructorAPI.model.loss,
                                                                       'val_loss': self.constructorAPI.model.val_loss})
-        self.log.config(state='disabled')
+        self.log.config(state='normal')
         self.log.delete(1.0, tk.END)
         self.log.insert(tk.END, 'Model was trained for ' + str(self.constructorAPI.model.epochs) + ' epochs\n')
         self.log.insert(tk.END, 'Total training accuracy: ' + str(self.constructorAPI.model.accuracy[-1]) + '\n')
         self.log.insert(tk.END, 'Total validation accuracy: ' + str(self.constructorAPI.model.val_accuracy[-1]) + '\n')
         self.log.insert(tk.END, 'Total training loss: ' + str(self.constructorAPI.model.loss[-1]) + '\n')
         self.log.insert(tk.END, 'Total validation loss: ' + str(self.constructorAPI.model.val_loss[-1]) + '\n')
-        self.log.config(state='normal')
-
+        self.log.config(state='disabled')
         self.notebook.tab(1, state="normal")
         self.notebook.select(1)
 
